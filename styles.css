@@ -41,3 +41,14 @@
   .rail{ z-index: 50; }   /* was 10; sits above scrim */
   .scrim{ z-index: 30; }  /* sits between drawer and page */
 }
+
+
+/* --- Mobile fine-tune: place text just beneath title; remove top bar line --- */
+@media (max-width: 420px){
+  .earth-text{ top: 26vh !important; }
+  .mobile-bar{ border-bottom: 0 !important; box-shadow: none !important; }
+}
+@media (min-width: 421px) and (max-width: 880px){
+  .earth-text{ top: 28vh !important; }
+  .mobile-bar{ border-bottom: 0 !important; box-shadow: none !important; }
+}
