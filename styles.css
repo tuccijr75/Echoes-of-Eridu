@@ -52,3 +52,7 @@
   .earth-text{ top: 28vh !important; }
   .mobile-bar{ border-bottom: 0 !important; box-shadow: none !important; }
 }
+
+/* Race roster micro-style (gold small-caps) */
+.earth-text .race-name{ color: var(--gold); font-variant: small-caps; font-weight: 700; letter-spacing: .06em; }
+.earth-text .race{ margin: 0 0 8px 0; }
