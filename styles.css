@@ -1,0 +1,146 @@
+
+/* Echoes of Eridu — Earth-text layout */
+:root{
+  --gold:#d4af37;
+  --gold-70: rgba(212,175,55,.7);
+  --gold-40: rgba(212,175,55,.4);
+  --obsidian:#0a0c10;
+  --white-85: rgba(255,255,255,.85);
+  --white-70: rgba(255,255,255,.70);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  color:var(--white-85);
+  font-family: ui-serif, 'Garamond', 'Palatino Linotype', Georgia, serif;
+  overflow:hidden;
+}
+
+/* Background "fits" entirely with letterboxing */
+.bg{
+  position:fixed; inset:0; z-index:-2;
+  width:100vw; height:100vh; object-fit:contain;
+  background:#05070a; /* letterbox color */
+}
+
+/* Gentle vignette for readability without heavy overlay */
+.vignette{
+  position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background: radial-gradient(1000px 600px at 20% 10%, rgba(0,0,0,.05), transparent),
+              radial-gradient(1300px 760px at 50% 80%, rgba(0,0,0,.10), transparent);
+}
+
+/* Left navigation (consistent across pages) */
+.rail{
+  position:fixed; left: clamp(10px, 2vw, 24px); top: clamp(10px, 2vw, 24px);
+  width: clamp(200px, 16vw, 240px);
+  padding: 12px 12px 14px;
+  border:1px solid var(--gold-40);
+  border-radius:16px;
+  background: color-mix(in srgb, var(--obsidian) 82%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.brand{ text-align:center; color:var(--gold); letter-spacing:.08em; line-height:1.04; }
+.brand .small{ font-size: clamp(12px, 1.6vw, 16px); font-variant: small-caps; }
+.brand .big{ font-size: clamp(22px, 3.8vw, 36px); font-weight:800; }
+.rail h2{ margin:8px 0 8px; font-size:14px; color:var(--gold); letter-spacing:.18em; }
+.nav{ display:flex; flex-direction:column; gap:8px; }
+.nav a{
+  text-decoration:none; color:var(--gold);
+  padding:9px 12px;
+  border-radius:12px;
+  border:1px solid var(--gold-40);
+  background: rgba(255,255,255,.06);
+  transition: background .12s ease, transform .12s ease, border-color .12s ease;
+}
+.nav a:hover{ transform: translateY(-1px); background: rgba(255,255,255,.10); }
+.nav a.active, .nav a[aria-current="page"]{
+  border-color: var(--gold);
+  background: rgba(212,175,55,.10);
+  box-shadow: 0 0 0 2px rgba(212,175,55,.12) inset;
+}
+
+/* Earth-anchored text block: positioned under the Earth on the background */
+.earth-text{
+  position:fixed;
+  /* push to the right of the left nav (200–240px) + margin */
+  left: clamp(260px, 22vw, 340px);
+  /* position directly below the Earth image region */
+  top: clamp(220px, 38vh, 420px);
+  /* tighten width ~20% (was ~32vw) */
+  max-width: min(26vw, 420px);
+  color: var(--white-85);
+  text-shadow: 0 1px 2px rgba(0,0,0,.45);
+  font-size: clamp(14px, 1.8vw, 18px);
+  line-height: 1.35;
+  letter-spacing: .02em;
+}
+.earth-text p{ margin: 0 0 10px 0; }
+.earth-text .lead{ color: var(--gold); }
+@media (max-width: 880px){
+  .rail{ width: 48vw; }
+  .earth-text{ max-width: 70vw; left: 50%; transform: translateX(-50%); top: 36vh; }
+}
+  .earth-text{ max-width: 70vw; left: 50%; transform: translateX(-50%); top: 26vh; }
+}
+
+
+
+/* Override: tuck the text into the smaller box under the Earth */
+.earth-text{
+  position:fixed;
+  left: clamp(220px, 20vw, 300px);  /* clear the left nav, align with box left */
+  top:  clamp(320px, 50vh, 540px);  /* sit directly inside the dotted box area */
+  max-width: min(24vw, 380px);      /* about 20% narrower than before */
+  color: var(--white-85);
+  text-shadow: 0 1px 2px rgba(0,0,0,.45);
+  font-size: clamp(12px, 1.4vw, 16px);  /* slightly smaller to fit */
+  line-height: 1.28;                    /* tight vertical rhythm */
+  letter-spacing: .015em;
+}
+.earth-text p{ margin: 0 0 6px 0; }
+.earth-text .lead{ color: var(--gold); }
+@media (max-width: 880px){
+  .earth-text{ max-width: 76vw; left: 50%; transform: translateX(-50%); top: 42vh; }
+}
+
+
+
+/* Refinement: position tightly under the Earth for common desktop sizes */
+.earth-text{
+  position:fixed;
+  left: 19.5vw;            /* nudge right from the nav; anchored to background composition */
+  top: 44vh;               /* sit below the Earth, above the planet cards */
+  width: min(22vw, 360px); /* ~20% narrower than earlier */
+  color: var(--white-85);
+  text-shadow: 0 1px 2px rgba(0,0,0,.45);
+  font-size: clamp(12px, 1.25vw, 15px);
+  line-height: 1.28;
+  letter-spacing: .015em;
+}
+.earth-text p{ margin: 0 0 6px 0; }
+.earth-text .lead{ color: var(--gold); }
+@media (max-width: 880px){
+  .earth-text{ width: 76vw; left: 50%; transform: translateX(-50%); top: 42vh; }
+}
+
+
+/* Micro‑nudge: move the Earth text slightly right to sit on the image */
+.earth-text{ left: 22.5vw; }  /* was ~19.5vw */
+@media (max-width: 880px){
+  .earth-text{ left: 50%; transform: translateX(-50%); } /* keep mobile centered */
+}
+
+
+/* Nudge ~1.5in to the right and center the text */
+.earth-text{
+  left: calc(22.5vw + 144px);  /* previous offset + 1.5in */
+  text-align: center;
+}
+.earth-text p{ margin: 0 0 8px 0; }
+@media (max-width: 880px){
+  .earth-text{ left: 50%; transform: translateX(-50%); } /* mobile stays centered */
+}
