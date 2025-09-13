@@ -34,3 +34,10 @@
   .footer{display:none}
 }
 @media (prefers-reduced-motion:reduce){.nav a,.rail{transition:none!important}}
+
+
+/* --- Mobile nav click-through fix: ensure drawer is above scrim --- */
+@media (max-width:880px){
+  .rail{ z-index: 50; }   /* was 10; sits above scrim */
+  .scrim{ z-index: 30; }  /* sits between drawer and page */
+}
