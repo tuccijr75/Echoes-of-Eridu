@@ -26,10 +26,10 @@
   .scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:20}
   #navcheck:checked ~ .scrim{opacity:1;pointer-events:auto}
   /* Earth text tuned for full-bleed */
-  .earth-text{left:50%;transform:translateX(-50%);top:40vh;width:86vw;font-size:14px;line-height:1.28;text-align:center;z-index:1}
+  .earth-text{left:50%;transform:translateX(-50%);top:36vh;width:86vw;font-size:14px;line-height:1.28;text-align:center;z-index:1}
 }
 @media (max-width:420px){
-  .earth-text{top:40.5vh;width:90vw;font-size:12.5px;line-height:1.22}
+  .earth-text{top:36vh;width:90vw;font-size:12.5px;line-height:1.22}
   .earth-text p{margin:0 0 4px 0}
   .footer{display:none}
 }
