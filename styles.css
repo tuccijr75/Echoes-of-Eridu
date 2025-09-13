@@ -37,3 +37,25 @@
   }
   .earth-text p{ margin: 0 0 6px 0; }
 }
+
+
+/* --- Final mobile fit tweaks --- */
+@media (max-width: 420px){
+  .earth-text{
+    top: 33vh;          /* was 38vh — lift above the card row */
+    width: 86vw;
+    font-size: 12px;    /* slightly smaller */
+    line-height: 1.18;  /* tighter lines */
+  }
+  .earth-text p{ margin: 0 0 3px 0; }
+  .footer{ display:none; } /* reclaim a bit more vertical space on tiny screens */
+}
+@media (min-width: 421px) and (max-width: 880px){
+  .earth-text{
+    top: 38vh;          /* a touch higher to avoid overlap */
+    width: 82vw;
+    font-size: 13.5px;
+    line-height: 1.24;
+  }
+  .earth-text p{ margin: 0 0 5px 0; }
+}
