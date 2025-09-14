@@ -2,7 +2,7 @@
 *{box-sizing:border-box}html,body{height:100%}body{margin:0;color:var(--white-85);font-family:ui-serif,Georgia,'Times New Roman',Times,serif;overflow:hidden}
 .bg{position:fixed;inset:0;z-index:-2;width:100vw;height:100dvh;object-fit:cover;object-position:center top;background:#05070a}
 .vignette{position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(1200px 650px at 15% -10%,rgba(255,255,255,.06),transparent),linear-gradient(180deg,rgba(0,0,0,.22),rgba(0,0,0,.10))}
-.rail{position:fixed;left:clamp(10px,2vw,24px);top:clamp(10px,2vw,24px);width:clamp(200px,16vw,240px);padding:12px;border:1px solid var(--gold-35);border-radius:16px;background:color-mix(in srgb,var(--obsidian) 82%,transparent);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:10040}
+.rail{position:fixed;left:clamp(10px,2vw,24px);top:clamp(10px,2vw,24px);width:clamp(200px,16vw,240px);padding:12px;border:1px solid var(--gold-35);border-radius:16px;background:rgba(10,12,16,.82);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:10040}
 .brand{text-align:center;color:var(--gold);letter-spacing:.08em;line-height:1.04}.brand .small{font-size:clamp(12px,1.6vw,16px);font-variant:small-caps}.brand .big{font-size:clamp(22px,3.8vw,36px);font-weight:800}
 .rail h2{margin:8px 0;font-size:14px;color:var(--gold);letter-spacing:.18em}.nav{display:flex;flex-direction:column;gap:8px}
 .nav a{min-height:44px;display:flex;align-items:center;text-decoration:none;color:var(--gold);padding:9px 12px;border-radius:12px;border:1px solid var(--gold-35);background:rgba(255,255,255,.06);transition:background .12s ease,transform .12s ease,border-color .12s ease}
