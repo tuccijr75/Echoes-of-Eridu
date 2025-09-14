@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="../styles.css">
 </head>
 <body>
-  <img class="bg" src="../assets/bg.png" alt="Echoes of Eridu background">
+  <img class="bg" src="../assets/bg.png" alt="BG">
   <div class="vignette" aria-hidden="true"></div>
 
   <input type="checkbox" id="navcheck" aria-hidden="true">
@@ -32,27 +32,23 @@
   </aside>
   <label class="scrim" for="navcheck" aria-hidden="true"></label>
 
-  <section class="earth-text" aria-label="Halor">
-    <p class="lead"><span class="race-name">Halor</span> — Gate-keepers of the Halo Ways who balance traffic, tribute, and cease-fires. They can halt a war by closing a door. Their conflict: when neutrality starts to favor tyrants, is it still neutral?</p>
+  <section class="earth-text">
+    <p class="lead"><span style="color:var(--gold);font-variant:small-caps;font-weight:700;letter-spacing:.06em">Halor</span> — Gate-keepers of the Halo Ways who balance traffic, tribute, and cease-fires. They can halt a war by closing a door. Their conflict: when neutrality starts to favor tyrants, is it still neutral?</p>
     <p><a class="race-tab" href="../characters.html" style="display:inline-block">← All Races</a></p>
   </section>
 
-  <div class="model-box" data-folder="../models/halor/">
-    <canvas class="model-canvas"></canvas>
-    <div class="model-overlay">
-      <span class="label">FBX Viewer</span>
-      <div class="controls">
-        <label class="btn">Choose FBX<input type="file" accept=".fbx"></label>
-        <a class="btn" href="../characters.html">All Races</a>
-      </div>
+  <div class="viewer" data-folder="../models/halor/">
+    <canvas></canvas>
+    <div style="position:absolute;left:10px;top:10px;right:10px;display:flex;gap:8px;justify-content:space-between;pointer-events:none">
+      <label style="pointer-events:auto" class="race-tab">Choose FBX<input type="file" accept=".fbx" style="display:none"></label>
+      <a class="race-tab" style="pointer-events:auto" href="../characters.html">All Races</a>
     </div>
-    <div class="drop-hint">Drop .fbx file here</div>
   </div>
 
   <div class="footer">© Echoes of Eridu — Obsidian &amp; Gold</div>
   <script type="module">
     import { initFBXViewer } from '../viewer.js';
-    initFBXViewer(document.querySelector('.model-box'));
+    initFBXViewer(document.querySelector('.viewer'));
   </script>
 </body>
 </html>
