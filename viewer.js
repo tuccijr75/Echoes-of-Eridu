@@ -21,53 +21,73 @@ export async function initFBXViewer(container){
   const canvas = container.querySelector('canvas');
   const renderer = new THREE.WebGLRenderer({antialias:true, canvas, alpha:true});
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  const scene = new THREE.Scene();
+  const scene = new THREE.Scene(); scene.background = null;
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 2000);
   camera.position.set(2.2, 1.6, 3.2);
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true; controls.dampingFactor = 0.06; controls.target.set(0,1,0);
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x404040, 1.1));
-  const dir = new THREE.DirectionalLight(0xffffff, 0.8); dir.position.set(4,6,8); scene.add(dir);
-
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x404040, 1.15));
+  const dir = new THREE.DirectionalLight(0xffffff, 0.9); dir.position.set(4,6,8); scene.add(dir);
   const loader = new FBXLoader(); const texLoader = new THREE.TextureLoader();
 
   let current=null;
-  function fit(obj){ const b=new THREE.Box3().setFromObject(obj); const s=b.getSize(new THREE.Vector3()); const c=b.getCenter(new THREE.Vector3());
-    const m=Math.max(s.x,s.y,s.z)||1; const f=camera.fov*Math.PI/180; const z=Math.abs(m/2/Math.tan(f/2))*1.4;
-    camera.position.set(c.x+z*0.3,c.y+m*0.4,c.z+z); controls.target.copy(c); controls.update(); }
+  function fit(obj){
+    const b=new THREE.Box3().setFromObject(obj);
+    if(!b.isEmpty()){
+      const s=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3());
+      const m=Math.max(s.x,s.y,s.z)||1; const f=camera.fov*Math.PI/180; const z=Math.abs(m/2/Math.tan(f/2))*1.4;
+      camera.position.set(c.x+z*0.3,c.y+m*0.35,c.z+z); controls.target.copy(c); controls.update();
+    }else{
+      camera.position.set(0,1.6,3); controls.target.set(0,1,0); controls.update();
+    }
+  }
   function clear(){ if(!current) return; scene.remove(current);
     current.traverse(n=>{ if(n.geometry) n.geometry.dispose(); if(n.material){ (Array.isArray(n.material)?n.material:[n.material]).forEach(m=>m.dispose()); } }); current=null; }
   function loadMap(path,isColor=false){ if(!path) return null; const t=texLoader.load(path); if(isColor) t.colorSpace = THREE.SRGBColorSpace; return t; }
-  function applyMaps(root,maps){ root.traverse(o=>{ if(!o.isMesh) return; const mat=new THREE.MeshStandardMaterial({color:0xffffff});
-    if(maps.map) mat.map=maps.map; if(maps.normalMap) mat.normalMap=maps.normalMap;
-    if(maps.roughnessMap) mat.roughnessMap=maps.roughnessMap; if(maps.metalnessMap) mat.metalnessMap=maps.metalnessMap;
-    if(maps.aoMap){ mat.aoMap=maps.aoMap; if(o.geometry.attributes.uv && !o.geometry.attributes.uv2){ o.geometry.setAttribute('uv2', o.geometry.attributes.uv); } }
-    if(!maps.metalnessMap) mat.metalness=0.0; if(!maps.roughnessMap) mat.roughness=0.6;
-    o.material=mat; o.material.needsUpdate=true; }); }
-
-  async function resolveMaps(folder){
-    const mapURL   = await resolveFirst(candidates(folder,'albedo'));
-    const normURL  = await resolveFirst(candidates(folder,'normal'));
-    const roughURL = await resolveFirst(candidates(folder,'roughness'));
-    const metalURL = await resolveFirst(candidates(folder,'metallic'));
-    const aoURL    = await resolveFirst(candidates(folder,'ao'));
-    return { map:loadMap(mapURL,true), normalMap:loadMap(normURL), roughnessMap:loadMap(roughURL), metalnessMap:loadMap(metalURL), aoMap:loadMap(aoURL) };
+  function applyMaps(root,maps){
+    root.traverse(o=>{
+      if(!o.isMesh) return;
+      const mat=new THREE.MeshStandardMaterial({ color: 0xffffff, side: THREE.FrontSide, skinning: !!o.isSkinnedMesh });
+      if(maps.map) mat.map=maps.map;
+      if(maps.normalMap) mat.normalMap=maps.normalMap;
+      if(maps.roughnessMap) mat.roughnessMap=maps.roughnessMap;
+      if(maps.metalnessMap) mat.metalnessMap=maps.metalnessMap;
+      if(maps.aoMap){ mat.aoMap=maps.aoMap; if(o.geometry.attributes.uv && !o.geometry.attributes.uv2){ o.geometry.setAttribute('uv2', o.geometry.attributes.uv); } }
+      if(!maps.metalnessMap) mat.metalness=0.0;
+      if(!maps.roughnessMap) mat.roughness=0.6;
+      o.material=mat; o.material.needsUpdate=true;
+    });
   }
 
   async function loadFromFolder(folder){
-    clear(); const trimmed = folder.replace(/\/+$/,''); const name = trimmed.split('/').pop();
-    const fbx = await resolveFirst([`${trimmed}/${name}.fbx`, `${trimmed}/model.fbx`, `${trimmed}/${name}.FBX`]);
+    clear();
+    const trimmed = folder.replace(/\/+$/,''); const name = trimmed.split('/').pop();
+    const tries = [
+      `${trimmed}/${name}.fbx`, `${trimmed}/${name}.FBX`, `${trimmed}/model.fbx`, `${trimmed}/Model.fbx`,
+      `${trimmed}/${name}_rig.fbx`, `${trimmed}/${name}-rig.fbx`, `${trimmed}/${name}_character.fbx`, `${trimmed}/character.fbx`
+    ];
+    let fbx = null; for(const t of tries){ const r = await tryFetch(t); if(r){ fbx = t; break; } }
     if(!fbx){ console.warn('No FBX found in', folder); return; }
-    const buf = await fetch(fbx).then(r=>r.arrayBuffer()); const obj = loader.parse(buf, ''); current = obj; scene.add(obj);
-    const maps = await resolveMaps(trimmed); applyMaps(obj, maps); fit(obj);
+    const buf = await fetch(fbx).then(r=>r.arrayBuffer());
+    const obj = loader.parse(buf, '');
+    current = obj; scene.add(obj);
+    const mapURL   = await resolveFirst(candidates(trimmed,'albedo'));
+    const normURL  = await resolveFirst(candidates(trimmed,'normal'));
+    const roughURL = await resolveFirst(candidates(trimmed,'roughness'));
+    const metalURL = await resolveFirst(candidates(trimmed,'metallic'));
+    const aoURL    = await resolveFirst(candidates(trimmed,'ao'));
+    applyMaps(obj, { map:loadMap(mapURL,true), normalMap:loadMap(normURL), roughnessMap:loadMap(roughURL), metalnessMap:loadMap(metalURL), aoMap:loadMap(aoURL) });
+    fit(obj);
   }
 
-  function handleFile(file){ if(!file || !/\.fbx$/i.test(file.name)) return;
-    const r=new FileReader(); r.onload=e=>{ clear(); const obj=loader.parse(e.target.result,''); current=obj; scene.add(obj); applyMaps(obj,{}); fit(obj); }; r.readAsArrayBuffer(file); }
-
-  container.addEventListener('dragover', e=>{ e.preventDefault(); container.classList.add('dragover'); });
-  container.addEventListener('dragleave', ()=> container.classList.remove('dragover'));
-  container.addEventListener('drop', e=>{ e.preventDefault(); container.classList.remove('dragover'); if(e.dataTransfer.files?.[0]) handleFile(e.dataTransfer.files[0]); });
+  function handleFile(file){
+    if(!file || !/\.fbx$/i.test(file.name)) return;
+    const r=new FileReader();
+    r.onload=e=>{ clear(); const obj=loader.parse(e.target.result,''); current=obj; scene.add(obj); applyMaps(obj,{}); fit(obj); };
+    r.readAsArrayBuffer(file);
+  }
+  container.addEventListener('dragover', e=>{ e.preventDefault(); });
+  container.addEventListener('drop', e=>{ e.preventDefault(); if(e.dataTransfer.files?.[0]) handleFile(e.dataTransfer.files[0]); });
   const fileInput = container.querySelector('input[type=file]'); if(fileInput){ fileInput.addEventListener('change', e=> e.target.files[0] && handleFile(e.target.files[0])); }
 
   function resize(){ const r=container.getBoundingClientRect(); renderer.setSize(Math.max(1,r.width),Math.max(1,r.height),false);
