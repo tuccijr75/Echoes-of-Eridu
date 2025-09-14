@@ -8,16 +8,19 @@ export async function initGLBViewer(container){
   const canvas = container.querySelector('canvas') || container.appendChild(document.createElement('canvas'));
 
   let THREE, OrbitControls, GLTFLoader, DRACOLoader, KTX2Loader, RoomEnvironment, MeshoptDecoder;
+  async function safeImport(url, name){
+    try{ return await import(url); }catch(e){ throw new Error('Missing local lib: '+name+' (<code>'+url+'</code>)'); }
+  }
   try{
-    THREE = await import('https://unpkg.com/three@0.159.0/build/three.module.js');
-    ({ OrbitControls } = await import('https://unpkg.com/three@0.159.0/examples/jsm/controls/OrbitControls.js'));
-    ({ GLTFLoader } = await import('https://unpkg.com/three@0.159.0/examples/jsm/loaders/GLTFLoader.js'));
-    ({ DRACOLoader } = await import('https://unpkg.com/three@0.159.0/examples/jsm/loaders/DRACOLoader.js'));
-    ({ KTX2Loader } = await import('https://unpkg.com/three@0.159.0/examples/jsm/loaders/KTX2Loader.js'));
-    ({ RoomEnvironment } = await import('https://unpkg.com/three@0.159.0/examples/jsm/environments/RoomEnvironment.js'));
-    ({ MeshoptDecoder } = await import('https://unpkg.com/meshoptimizer/meshopt_decoder.module.js'));
+    THREE = await safeImport('./libs/three.module.js', 'three.module.js');
+    ({ OrbitControls } = await safeImport('./libs/OrbitControls.js', 'OrbitControls.js'));
+    ({ GLTFLoader } = await safeImport('./libs/GLTFLoader.js', 'GLTFLoader.js'));
+    ({ DRACOLoader } = await safeImport('./libs/DRACOLoader.js', 'DRACOLoader.js'));
+    ({ KTX2Loader } = await safeImport('./libs/KTX2Loader.js', 'KTX2Loader.js'));
+    ({ RoomEnvironment } = await safeImport('./libs/RoomEnvironment.js', 'RoomEnvironment.js'));
+    ({ MeshoptDecoder } = await safeImport('./libs/meshopt_decoder.module.js', 'meshopt_decoder.module.js'));
   }catch(e){
-    setStatus("Couldn’t load 3D libs (CDN blocked).<br><small>Allow unpkg.com or ask me for a no-CDN build.</small>");
+    setStatus('Local libraries not found.<br><small>'+e.message+'<br/>Place the files listed in <code>libs/README.txt</code> and reload.</small>');
     return;
   }
 
@@ -41,8 +44,8 @@ export async function initGLBViewer(container){
     const dir = new THREE.DirectionalLight(0xffffff, 1.0); dir.position.set(4,6,8); scene.add(dir);
 
     const gltfLoader = new GLTFLoader();
-    const draco = new DRACOLoader(); draco.setDecoderPath('https://unpkg.com/three@0.159.0/examples/jsm/libs/draco/'); gltfLoader.setDRACOLoader(draco);
-    const ktx2 = new KTX2Loader(); ktx2.setTranscoderPath('https://unpkg.com/three@0.159.0/examples/jsm/libs/basis/'); ktx2.detectSupport(renderer); gltfLoader.setKTX2Loader(ktx2);
+    const draco = new DRACOLoader(); draco.setDecoderPath('./libs/draco/'); gltfLoader.setDRACOLoader(draco);
+    const ktx2 = new KTX2Loader(); ktx2.setTranscoderPath('./libs/basis/'); ktx2.detectSupport(renderer); gltfLoader.setKTX2Loader(ktx2);
     gltfLoader.setMeshoptDecoder(MeshoptDecoder);
 
     let current = null;
@@ -78,20 +81,17 @@ export async function initGLBViewer(container){
     function resize(){
       const r = container.getBoundingClientRect();
       const w = Math.max(1, r.width), h = Math.max(1, r.height);
+      const dpr = Math.min(window.devicePixelRatio||1, 2);
       renderer.setSize(w, h, false);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+      renderer.setPixelRatio(dpr);
       camera.aspect = w/h; camera.updateProjectionMatrix();
     }
     resize(); window.addEventListener('resize', resize);
     (function tick(){ requestAnimationFrame(tick); controls.update(); renderer.render(scene, camera); })();
 
+    async function tryFetch(url){ try{ const r = await fetch(url,{cache:'no-cache'}); if(!r.ok) throw 0; return r; }catch(e){ return null; } }
     function clean(p){ return p.replace(/\/+/g,'/'); }
-    function makeTryList(folder, name){
-      return [`${folder}${name}.glb`, `${folder}model.glb`, `${folder}character.glb`, `${folder}${name}.gltf`, `${folder}model.gltf`];
-    }
-    async function tryFetch(url){
-      try{ const r = await fetch(url,{cache:'no-cache'}); if(!r.ok) throw 0; return r; }catch(e){ return null; }
-    }
+    function makeTryList(folder, name){ return [`${folder}${name}.glb`, `${folder}model.glb`, `${folder}character.glb`, `${folder}${name}.gltf`, `${folder}model.gltf`]; }
 
     async function loadFromFolderOrURL(folder, explicit){
       if (current){ scene.remove(current); disposeObject(current); current=null; }
@@ -124,6 +124,7 @@ export async function initGLBViewer(container){
     const file = container.dataset.model || '';
     setStatus('Viewer ready. Searching for model…');
     loadFromFolderOrURL(folder, file);
+
   }catch(e){
     setStatus('Viewer error.<br><small>'+ (e?.message || e) +'</small>');
   }
