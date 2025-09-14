@@ -34,27 +34,25 @@
 
   <section class="earth-text" aria-label="Lapisar">
     <p class="lead"><span class="race-name">Lapisar</span> — Ledger scholars and memory curators who treat archives as living beings. They rescue lost filings, outlawed songs, and forbidden Names. Their drama pits preservation against liberation: when history harms, what do you erase, and what do you redeem?</p>
-    <p><a href="../characters.html" class="race-tab" style="display:inline-block">← All Races</a></p>
+<p><a class="race-tab" href="../characters.html" style="display:inline-block">← All Races</a></p>
   </section>
 
   <div class="model-box" data-initial="">
-  <canvas class="model-canvas"></canvas>
-  <div class="model-overlay">
-    <span class="label">FBX Viewer</span>
-    <div class="controls">
-      <label class="btn">Choose FBX<input type="file" accept=".fbx"></label>
-      <a class="btn" href="../characters.html">All Races</a>
+    <canvas class="model-canvas"></canvas>
+    <div class="model-overlay">
+      <span class="label">FBX Viewer</span>
+      <div class="controls">
+        <label class="btn">Choose FBX<input type="file" accept=".fbx"></label>
+        <a class="btn" href="../characters.html">All Races</a>
+      </div>
     </div>
+    <div class="drop-hint">Drop .fbx file here</div>
   </div>
-  <div class="drop-hint">Drop .fbx file here</div>
-</div>
-<div class="footer">© Echoes of Eridu — Obsidian &amp; Gold</div>
-<script type="module">
-import { initFBXViewer } from '../viewer.js';
-document.querySelectorAll('.model-box').forEach(box=>{
-  const initial = box.dataset.initial || null;
-  initFBXViewer(box, initial);
-});
-</script>
+
+  <div class="footer">© Echoes of Eridu — Obsidian &amp; Gold</div>
+  <script type="module">
+    import { initFBXViewer } from '../viewer.js';
+    initFBXViewer(document.querySelector('.model-box'));
+  </script>
 </body>
 </html>
