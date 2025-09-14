@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fetch Test</title>
+</head>
+<body>
+    <h1>Fetch Test</h1>
+    <div id="output"></div>
+    <script type="module">
+        const output = document.getElementById('output');
+        
+        async function tryFetch(url) {
+            try {
+                const r = await fetch(url, {cache: 'no-cache'});
+                if (!r.ok) throw 0;
+                return r;
+            } catch (e) {
+                return null;
+            }
+        }
+        
+        async function test() {
+            const urls = [
+                '../models/adamu/model.glb',
+                'models/adamu/model.glb',
+                '/models/adamu/model.glb'
+            ];
+            
+            for (const url of urls) {
+                output.innerHTML += `<div>Testing: ${url}</div>`;
+                const result = await tryFetch(url);
+                if (result) {
+                    output.innerHTML += `<div style="color: green;">✓ Success: ${url}</div>`;
+                } else {
+                    output.innerHTML += `<div style="color: red;">✗ Failed: ${url}</div>`;
+                }
+            }
+        }
+        
+        test();
+    </script>
+</body>
+</html>

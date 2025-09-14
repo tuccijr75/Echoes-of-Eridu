@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GLB Debug</title>
+    <style>
+        .viewer { width: 400px; height: 400px; border: 1px solid #ccc; }
+        .debug { margin: 20px; padding: 10px; background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>GLB Loading Debug</h1>
+    <div class="debug">
+        <h3>Debug Info:</h3>
+        <div id="debug-output"></div>
+    </div>
+    <div class="viewer" data-folder="models/adamu/" data-model="models/adamu/model.glb">
+        <canvas></canvas>
+    </div>
+    <script type="module">
+        const debugOutput = document.getElementById('debug-output');
+        
+        function log(message) {
+            console.log(message);
+            debugOutput.innerHTML += '<div>' + message + '</div>';
+        }
+        
+        log('Starting debug...');
+        
+        // Test if we can fetch the model directly
+        try {
+            const response = await fetch('models/adamu/model.glb');
+            log('Direct fetch result: ' + response.status + ' ' + response.statusText);
+            if (response.ok) {
+                log('Model file is accessible');
+            } else {
+                log('Model file not accessible: ' + response.status);
+            }
+        } catch (error) {
+            log('Direct fetch error: ' + error.message);
+        }
+        
+        // Test Three.js loading
+        try {
+            const THREE = await import('./libs/three.module.js');
+            log('Three.js loaded successfully');
+        } catch (error) {
+            log('Three.js loading error: ' + error.message);
+        }
+        
+        // Test GLTFLoader loading
+        try {
+            const { GLTFLoader } = await import('./libs/GLTFLoader.js');
+            log('GLTFLoader loaded successfully');
+        } catch (error) {
+            log('GLTFLoader loading error: ' + error.message);
+        }
+        
+        // Now try the viewer
+        try {
+            const { initGLBViewer } = await import('./viewer.js');
+            log('Viewer module loaded, initializing...');
+            initGLBViewer(document.querySelector('.viewer'));
+        } catch (error) {
+            log('Viewer error: ' + error.message);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minimal GLB Test</title>
+    <style>
+        canvas { width: 400px; height: 400px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>Minimal GLB Test</h1>
+    <canvas id="canvas"></canvas>
+    <div id="status">Loading...</div>
+    <script type="module">
+        const canvas = document.getElementById('canvas');
+        const status = document.getElementById('status');
+        
+        try {
+            // Import Three.js
+            const THREE = await import('./libs/three.module.js');
+            status.textContent = 'Three.js loaded';
+            
+            // Import GLTFLoader
+            const { GLTFLoader } = await import('./libs/GLTFLoader.js');
+            status.textContent = 'GLTFLoader loaded';
+            
+            // Create scene
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas });
+            renderer.setSize(400, 400);
+            
+            // Add lights
+            scene.add(new THREE.HemisphereLight(0xffffff, 0x404040, 0.8));
+            const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+            dir.position.set(4, 6, 8);
+            scene.add(dir);
+            
+            // Load model
+            const loader = new GLTFLoader();
+            status.textContent = 'Loading model...';
+            
+            loader.load(
+                'models/adamu/model.glb',
+                (gltf) => {
+                    status.textContent = 'Model loaded successfully!';
+                    scene.add(gltf.scene);
+                    
+                    // Position camera
+                    camera.position.set(3, 1.8, 4);
+                    camera.lookAt(0, 0, 0);
+                    
+                    // Render
+                    renderer.render(scene, camera);
+                },
+                undefined,
+                (error) => {
+                    status.textContent = 'Error loading model: ' + error.message;
+                    console.error('GLTFLoader error:', error);
+                }
+            );
+            
+        } catch (error) {
+            status.textContent = 'Error: ' + error.message;
+            console.error('Error:', error);
+        }
+    </script>
+</body>
+</html>

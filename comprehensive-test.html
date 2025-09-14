@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Comprehensive GLB Test</title>
+    <style>
+        canvas { width: 400px; height: 400px; border: 1px solid #ccc; }
+        .log { margin: 10px 0; padding: 5px; background: #f0f0f0; font-family: monospace; }
+        .error { background: #ffcccc; }
+        .success { background: #ccffcc; }
+    </style>
+</head>
+<body>
+    <h1>Comprehensive GLB Test</h1>
+    <canvas id="canvas"></canvas>
+    <div id="logs"></div>
+    <script type="module">
+        const canvas = document.getElementById('canvas');
+        const logs = document.getElementById('logs');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logs.appendChild(div);
+            console.log(message);
+        }
+        
+        async function test() {
+            try {
+                log('Starting comprehensive test...');
+                
+                // Test 1: Check if we can fetch the model file
+                log('Test 1: Fetching model file...');
+                const response = await fetch('models/adamu/model.glb');
+                if (response.ok) {
+                    log('✓ Model file fetch successful', 'success');
+                    log(`  Status: ${response.status}`);
+                    log(`  Content-Type: ${response.headers.get('content-type')}`);
+                    log(`  Content-Length: ${response.headers.get('content-length')}`);
+                } else {
+                    log(`✗ Model file fetch failed: ${response.status} ${response.statusText}`, 'error');
+                    return;
+                }
+                
+                // Test 2: Load Three.js
+                log('Test 2: Loading Three.js...');
+                const THREE = await import('./libs/three.module.js');
+                log('✓ Three.js loaded successfully', 'success');
+                log(`  Version: ${THREE.REVISION}`);
+                
+                // Test 3: Load GLTFLoader
+                log('Test 3: Loading GLTFLoader...');
+                const { GLTFLoader } = await import('./libs/GLTFLoader.js');
+                log('✓ GLTFLoader loaded successfully', 'success');
+                
+                // Test 4: Create Three.js scene
+                log('Test 4: Creating Three.js scene...');
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+                renderer.setSize(400, 400);
+                renderer.outputColorSpace = THREE.SRGBColorSpace;
+                
+                // Add lights
+                scene.add(new THREE.HemisphereLight(0xffffff, 0x404040, 0.8));
+                const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+                dir.position.set(4, 6, 8);
+                scene.add(dir);
+                
+                log('✓ Three.js scene created successfully', 'success');
+                
+                // Test 5: Load GLB model
+                log('Test 5: Loading GLB model...');
+                const loader = new GLTFLoader();
+                
+                loader.load(
+                    'models/adamu/model.glb',
+                    (gltf) => {
+                        log('✓ GLB model loaded successfully!', 'success');
+                        log(`  Scene: ${gltf.scene ? 'present' : 'missing'}`);
+                        log(`  Scenes: ${gltf.scenes ? gltf.scenes.length : 0}`);
+                        log(`  Animations: ${gltf.animations ? gltf.animations.length : 0}`);
+                        
+                        if (gltf.scene) {
+                            scene.add(gltf.scene);
+                            
+                            // Position camera
+                            camera.position.set(3, 1.8, 4);
+                            camera.lookAt(0, 0, 0);
+                            
+                            // Render
+                            renderer.render(scene, camera);
+                            log('✓ Model rendered successfully', 'success');
+                        }
+                    },
+                    (progress) => {
+                        log(`Loading progress: ${(progress.loaded / progress.total * 100).toFixed(1)}%`);
+                    },
+                    (error) => {
+                        log(`✗ GLB loading failed: ${error.message}`, 'error');
+                        log(`  Error details: ${JSON.stringify(error)}`, 'error');
+                        console.error('GLTFLoader error:', error);
+                    }
+                );
+                
+            } catch (error) {
+                log(`✗ Test failed: ${error.message}`, 'error');
+                console.error('Test error:', error);
+            }
+        }
+        
+        test();
+    </script>
+</body>
+</html>
