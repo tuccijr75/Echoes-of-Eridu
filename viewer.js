@@ -1,4 +1,3 @@
-
 import * as THREE from 'https://unpkg.com/three@0.159.0/build/three.module.js';
 import { OrbitControls } from 'https://unpkg.com/three@0.159.0/examples/jsm/controls/OrbitControls.js';
 import { FBXLoader } from 'https://unpkg.com/three@0.159.0/examples/jsm/loaders/FBXLoader.js';
@@ -24,19 +23,29 @@ export async function initFBXViewer(container){
   const scene = new THREE.Scene(); scene.background = null;
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 2000);
   camera.position.set(2.2, 1.6, 3.2);
+
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true; controls.dampingFactor = 0.06; controls.target.set(0,1,0);
+
   scene.add(new THREE.HemisphereLight(0xffffff, 0x404040, 1.15));
   const dir = new THREE.DirectionalLight(0xffffff, 0.9); dir.position.set(4,6,8); scene.add(dir);
-  const loader = new FBXLoader(); const texLoader = new THREE.TextureLoader();
+
+  const loader = new FBXLoader();
+  const texLoader = new THREE.TextureLoader();
 
   let current=null;
+  const viewScale = 1.5; // 50% larger after fit
+
   function fit(obj){
     const b=new THREE.Box3().setFromObject(obj);
     if(!b.isEmpty()){
       const s=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3());
-      const m=Math.max(s.x,s.y,s.z)||1; const f=camera.fov*Math.PI/180; const z=Math.abs(m/2/Math.tan(f/2))*1.4;
-      camera.position.set(c.x+z*0.3,c.y+m*0.35,c.z+z); controls.target.copy(c); controls.update();
+      const m=Math.max(s.x,s.y,s.z)||1;
+      const f=camera.fov*Math.PI/180;
+      const z=Math.abs(m/2/Math.tan(f/2))*1.4;
+      const zz = z / viewScale; // pull camera in
+      camera.position.set(c.x+zz*0.3, c.y+m*0.35, c.z+zz);
+      controls.target.copy(c); controls.update();
     }else{
       camera.position.set(0,1.6,3); controls.target.set(0,1,0); controls.update();
     }
@@ -86,9 +95,15 @@ export async function initFBXViewer(container){
     r.onload=e=>{ clear(); const obj=loader.parse(e.target.result,''); current=obj; scene.add(obj); applyMaps(obj,{}); fit(obj); };
     r.readAsArrayBuffer(file);
   }
+
+  const fileInput = container.querySelector('input[type=file]');
+  const chooseBtn = container.querySelector('.choose-btn');
+  if(chooseBtn && fileInput){
+    chooseBtn.addEventListener('click', ()=> fileInput.click());
+    fileInput.addEventListener('change', e=> e.target.files[0] && handleFile(e.target.files[0]));
+  }
   container.addEventListener('dragover', e=>{ e.preventDefault(); });
   container.addEventListener('drop', e=>{ e.preventDefault(); if(e.dataTransfer.files?.[0]) handleFile(e.dataTransfer.files[0]); });
-  const fileInput = container.querySelector('input[type=file]'); if(fileInput){ fileInput.addEventListener('change', e=> e.target.files[0] && handleFile(e.target.files[0])); }
 
   function resize(){ const r=container.getBoundingClientRect(); renderer.setSize(Math.max(1,r.width),Math.max(1,r.height),false);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2)); camera.aspect=r.width/r.height; camera.updateProjectionMatrix(); }
