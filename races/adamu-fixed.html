@@ -1,0 +1,31 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Echoes of Eridu — Adamu (Fixed)</title>
+<link rel="stylesheet" href="../styles.css"/></head><body>
+<img class="bg" src="../assets/bg.png" alt="BG"/><div class="vignette" aria-hidden="true"></div>
+<input type="checkbox" id="navcheck" aria-hidden="true" />
+<div class="mobile-bar"><label class="hamburger" for="navcheck">≡</label><div class="mobile-title">ERIDU</div></div>
+<aside class="rail" role="navigation" aria-label="Site navigation">
+  <div class="brand"><div class="small">ECHOES OF</div><div class="big">ERIDU</div></div>
+  <h2>ASSETS</h2>
+  <nav class="nav">
+    <a href="../index.html">Home</a>
+    <a href="../characters.html" class="active" aria-current="page">Characters</a>
+    <a href="../weapons.html">Weapons</a>
+    <a href="../worlds.html">Worlds</a>
+    <a href="../vehicles.html">Vehicles</a>
+  </nav>
+</aside>
+<label class="scrim" for="navcheck"></label>
+<section class="earth-text">
+  <p class="lead"><span style="color:var(--gold);font-variant:small-caps;font-weight:700;letter-spacing:.06em">Adamu</span> — The First People. Survivors who remember when law was a promise between neighbors, not a weapon. They seek to free worlds from imperial ledgers, one oath at a time. Their arc wrestles with inheritance vs. reinvention: do they restore what was, or build something untested but kinder?</p>
+</section>
+<div class="viewer" data-folder="/models/adamu/" data-model="/models/adamu/model.glb">
+  <canvas></canvas>
+</div>
+<div class="footer">© Echoes of Eridu — Obsidian &amp; Gold</div>
+<script type="module">
+  import { initGLBViewer } from '../viewer-fixed.js';
+  initGLBViewer(document.querySelector('.viewer'));
+</script>
+</body></html>

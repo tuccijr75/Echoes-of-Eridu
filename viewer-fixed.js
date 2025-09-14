@@ -26,7 +26,7 @@ export async function initGLBViewer(container){
     throw new Error(`Missing lib: ${name}<br><small>Tried: ${tried.join(', ')}</small>`);
   }
 
-  const base = new URL('.', import.meta.url).href; // .../Echoes-of-Eridu/
+  const base = new URL('.', import.meta.url).href;
   console.log('Base URL:', base);
   const local = p => [`./libs/${p}`, `${base}libs/${p}`, `/Echoes-of-Eridu/libs/${p}`];
   const cdn   = p => [`https://cdn.jsdelivr.net/npm/three@0.159.0/${p}`];
@@ -117,6 +117,7 @@ export async function initGLBViewer(container){
         return null; 
       } 
     }
+    
     function clean(p){ return p.replace(/\/+/g,'/'); }
     function makeTryList(folder, name){ return [`${folder}${name}.glb`, `${folder}model.glb`, `${folder}character.glb`, `${folder}${name}.gltf`, `${folder}model.gltf`]; }
     
@@ -134,6 +135,7 @@ export async function initGLBViewer(container){
       console.log(`loadFromFolderOrURL called with folder: "${folder}", explicit: "${explicit}"`);
       if (current){ scene.remove(current); disposeObject(current); current=null; }
       const tried = []; let url = null;
+      
       if (explicit){ 
         const u = clean(explicit); 
         const resolvedUrl = resolvePath(u);
@@ -144,6 +146,7 @@ export async function initGLBViewer(container){
           console.log(`✓ Found model at explicit URL: ${resolvedUrl}`);
         }
       }
+      
       if (!url && folder){
         let f = clean(folder); if (!f.endsWith('/')) f += '/';
         const name = f.split('/').filter(Boolean).pop();
@@ -162,6 +165,7 @@ export async function initGLBViewer(container){
           } 
         }
       }
+      
       if (!url){ 
         console.log(`✗ Model not found. Tried: ${tried.join(', ')}`);
         setStatus('Model not found.<br><small>Tried:<br>'+tried.map(x=>`<code>${x}</code>`).join('<br>')+'</small>'); 
