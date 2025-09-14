@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Echoes of Eridu — Shardim</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <img class="bg" src="../assets/bg.png" alt="Echoes of Eridu background">
+  <div class="vignette" aria-hidden="true"></div>
+
+  <input type="checkbox" id="navcheck" aria-hidden="true">
+  <div class="mobile-bar">
+    <label class="hamburger" for="navcheck" aria-label="Open navigation">≡</label>
+    <div class="mobile-title">ERIDU</div>
+  </div>
+
+  <aside class="rail" role="navigation" aria-label="Site navigation">
+    <div class="brand">
+      <div class="small">ECHOES OF</div>
+      <div class="big">ERIDU</div>
+    </div>
+    <h2>ASSETS</h2>
+    <nav class="nav">
+      <a href="../index.html">Home</a>
+      <a href="../characters.html" class="active" aria-current="page">Characters</a>
+      <a href="../weapons.html">Weapons</a>
+      <a href="../worlds.html">Worlds</a>
+      <a href="../vehicles.html">Vehicles</a>
+    </nav>
+  </aside>
+  <label class="scrim" for="navcheck" aria-hidden="true"></label>
+
+  <section class="earth-text" aria-label="Shardim">
+    <p class="lead"><span class="race-name">Shardim</span> — Storm-plateau tacticians who harness lightning’s chaos to keep roads open. They are excellent at breaking siege cycles. Their arc is about learning mercy without losing their edge as the war grinds on.</p>
+    <p><a href="../characters.html" class="race-tab" style="display:inline-block">← All Races</a></p>
+  </section>
+
+  <div class="model-box" data-initial="">
+  <canvas class="model-canvas"></canvas>
+  <div class="model-overlay">
+    <span class="label">FBX Viewer</span>
+    <div class="controls">
+      <label class="btn">Choose FBX<input type="file" accept=".fbx"></label>
+      <a class="btn" href="../characters.html">All Races</a>
+    </div>
+  </div>
+  <div class="drop-hint">Drop .fbx file here</div>
+</div>
+<div class="footer">© Echoes of Eridu — Obsidian &amp; Gold</div>
+<script type="module">
+import { initFBXViewer } from '../viewer.js';
+document.querySelectorAll('.model-box').forEach(box=>{
+  const initial = box.dataset.initial || null;
+  initFBXViewer(box, initial);
+});
+</script>
+</body>
+</html>
