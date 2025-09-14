@@ -1,1 +1,1 @@
-
+Place your .fbx files here and set data-initial on the model-box to the relative path.
