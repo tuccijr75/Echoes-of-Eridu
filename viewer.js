@@ -7,46 +7,44 @@ export async function initGLBViewer(container){
 
   const canvas = container.querySelector('canvas') || container.appendChild(document.createElement('canvas'));
 
-  let THREE, OrbitControls, GLTFLoader, DRACOLoader, KTX2Loader, RoomEnvironment, MeshoptDecoder;
-  async function safeImport(url, name){
-    try{ return await import(url); }catch(e){ throw new Error('Missing local lib: '+name+' (<code>'+url+'</code>)'); }
+  async function tryImport(list, name){
+    const tried = [];
+    for (const u of list){
+      try{ return await import(u); }catch(e){ tried.push(u); }
+    }
+    throw new Error(`Missing lib: ${name}<br><small>Tried: ${tried.join(', ')}</small>`);
   }
+
+  const base = new URL('.', import.meta.url).href; // .../Echoes-of-Eridu/
+  const local = p => [`./libs/${p}`, `${base}libs/${p}`, `/Echoes-of-Eridu/libs/${p}`];
+  const cdn   = p => [`https://cdn.jsdelivr.net/npm/three@0.159.0/${p}`];
+  const ex    = p => `examples/jsm/${p}`;
+
+  let THREE, OrbitControls, GLTFLoader;
   try{
-    THREE = await safeImport('./libs/three.module.js', 'three.module.js');
-    ({ OrbitControls } = await safeImport('./libs/OrbitControls.js', 'OrbitControls.js'));
-    ({ GLTFLoader } = await safeImport('./libs/GLTFLoader.js', 'GLTFLoader.js'));
-    ({ DRACOLoader } = await safeImport('./libs/DRACOLoader.js', 'DRACOLoader.js'));
-    ({ KTX2Loader } = await safeImport('./libs/KTX2Loader.js', 'KTX2Loader.js'));
-    ({ RoomEnvironment } = await safeImport('./libs/RoomEnvironment.js', 'RoomEnvironment.js'));
-    ({ MeshoptDecoder } = await safeImport('./libs/meshopt_decoder.module.js', 'meshopt_decoder.module.js'));
+    THREE =              await tryImport([...local('three.module.js'),        ...cdn('build/three.module.js')], 'three.module.js');
+    ({ OrbitControls } ) = await tryImport([...local('OrbitControls.js'), ...cdn(ex('controls/OrbitControls.js'))], 'OrbitControls.js');
+    ({ GLTFLoader }  )   = await tryImport([...local('GLTFLoader.js'),    ...cdn(ex('loaders/GLTFLoader.js'))], 'GLTFLoader.js');
   }catch(e){
-    setStatus('Local libraries not found.<br><small>'+e.message+'<br/>Place the files listed in <code>libs/README.txt</code> and reload.</small>');
+    setStatus('Local/CDN libraries not available.<br><small>'+e.message+'</small>');
     return;
   }
 
   try{
     const renderer = new THREE.WebGLRenderer({ antialias:true, canvas, alpha:true });
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.05;
 
     const scene = new THREE.Scene(); scene.background = null;
     const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 10000);
     camera.position.set(3, 1.8, 4);
 
-    const pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.08).texture;
-
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true; controls.dampingFactor = 0.06; controls.target.set(0,1,0);
 
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x404040, 0.6));
-    const dir = new THREE.DirectionalLight(0xffffff, 1.0); dir.position.set(4,6,8); scene.add(dir);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x404040, 0.8));
+    const dir = new THREE.DirectionalLight(0xffffff, 0.9); dir.position.set(4,6,8); scene.add(dir);
 
-    const gltfLoader = new GLTFLoader();
-    const draco = new DRACOLoader(); draco.setDecoderPath('./libs/draco/'); gltfLoader.setDRACOLoader(draco);
-    const ktx2 = new KTX2Loader(); ktx2.setTranscoderPath('./libs/basis/'); ktx2.detectSupport(renderer); gltfLoader.setKTX2Loader(ktx2);
-    gltfLoader.setMeshoptDecoder(MeshoptDecoder);
+    const loader = new GLTFLoader();
 
     let current = null;
     function disposeObject(obj){
@@ -96,7 +94,6 @@ export async function initGLBViewer(container){
     async function loadFromFolderOrURL(folder, explicit){
       if (current){ scene.remove(current); disposeObject(current); current=null; }
       const tried = []; let url = null;
-
       if (explicit){ const u = clean(explicit); tried.push(u); if (await tryFetch(u)) url = u; }
       if (!url && folder){
         let f = clean(folder); if (!f.endsWith('/')) f += '/';
@@ -108,7 +105,7 @@ export async function initGLBViewer(container){
       if (!url){ setStatus('Model not found.<br><small>Tried:<br>'+tried.map(x=>`<code>${x}</code>`).join('<br>')+'</small>'); return; }
 
       setStatus('Loading model…');
-      gltfLoader.load(url, (g)=>{
+      loader.load(url, (g)=>{
         const node = g.scene || g.scenes?.[0];
         if (!node){ setStatus('Loaded file, but no scene.'); return; }
         current = node;
