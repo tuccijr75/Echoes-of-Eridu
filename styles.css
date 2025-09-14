@@ -56,3 +56,70 @@
 /* Race roster micro-style (gold small-caps) */
 .earth-text .race-name{ color: var(--gold); font-variant: small-caps; font-weight: 700; letter-spacing: .06em; }
 .earth-text .race{ margin: 0 0 8px 0; }
+
+/* --- Characters sub-tabs (races) --- */
+.race-tabs{
+  margin: 8px auto 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 8px;
+  max-width: 680px;
+}
+.race-tab{
+  display:block; text-decoration:none; text-align:center;
+  padding:8px 10px; border-radius:12px;
+  border:1px solid var(--gold-35); color:var(--gold);
+  background: rgba(255,255,255,.06);
+  min-height:38px; line-height:1.1;
+}
+.race-tab:hover{ background: rgba(255,255,255,.10); transform: translateY(-1px); }
+@media (max-width: 880px){
+  .race-tabs{ grid-template-columns: repeat(2, minmax(0,1fr)); max-width: 86vw; }
+}
+
+/* --- FBX model placeholder box --- */
+.model-box{
+  position: fixed;
+  right: clamp(12px, 3vw, 32px);
+  top: clamp(220px, 32vh, 360px);
+  width: min(40vw, 520px);
+  height: min(38vh, 420px);
+  border:1px dashed var(--gold-35);
+  border-radius: 16px;
+  background: rgba(255,255,255,.04);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display:flex; align-items:center; justify-content:center;
+  text-align:center; color: var(--white-65);
+  padding: 12px;
+}
+.model-box .label{ color: var(--gold); font-variant: small-caps; letter-spacing:.10em; display:block; margin-bottom:6px; }
+@media (max-width: 880px){
+  .model-box{
+    position: static; width: 86vw; height: 220px;
+    margin: 8px auto 12px; 
+  }
+}
+
+
+/* FBX viewer canvas inside the existing model-box */
+.model-box{ position: relative; overflow: hidden; }
+.model-canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+.model-overlay{
+  position:absolute; left:10px; top:10px; right:10px; display:flex; gap:10px; align-items:center; justify-content:space-between;
+  pointer-events:none;
+}
+.model-overlay .label{ pointer-events:auto; background:rgba(10,12,16,.55); padding:6px 10px; border-radius:10px; border:1px solid var(--gold-35); }
+.model-overlay .controls{ pointer-events:auto; display:flex; gap:8px; align-items:center; }
+.model-overlay input[type="file"]{ display:none; }
+.model-overlay .btn{
+  padding:6px 10px; border-radius:10px; border:1px solid var(--gold-35);
+  background:rgba(255,255,255,.06); color:var(--gold); font-size:12px; text-decoration:none;
+}
+.model-overlay .btn:hover{ background:rgba(255,255,255,.10); }
+.drop-hint{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  color:var(--white-65); background:rgba(10,12,16,.55); padding:8px 12px; border-radius:12px; border:1px dashed var(--gold-35);
+  display:none;
+}
+.model-box.dragover .drop-hint{ display:block; }
