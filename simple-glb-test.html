@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Simple GLB Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        .info { background: #d1ecf1; border-color: #bee5eb; }
+        canvas { border: 1px solid #333; margin: 10px 0; }
+        .log { background: #000; color: #0f0; padding: 10px; font-family: monospace; font-size: 12px; height: 200px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>Simple GLB Loading Test</h1>
+    
+    <div class="test info">
+        <h3>Test Results</h3>
+        <div id="results"></div>
+    </div>
+
+    <div class="test info">
+        <h3>3D Viewer</h3>
+        <canvas id="canvas" width="400" height="400"></canvas>
+    </div>
+
+    <div class="test info">
+        <h3>Console Logs</h3>
+        <div id="logs" class="log"></div>
+    </div>
+
+    <script type="module">
+        const results = document.getElementById('results');
+        const logs = document.getElementById('logs');
+        const canvas = document.getElementById('canvas');
+
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}\n`;
+            logs.textContent += logEntry;
+            logs.scrollTop = logs.scrollHeight;
+            console.log(message);
+        }
+
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.textContent = message;
+            div.className = type;
+            results.appendChild(div);
+        }
+
+        async function test() {
+            log('Starting simple GLB test...');
+
+            try {
+                // Test 1: Fetch the file
+                log('Testing file fetch...');
+                const response = await fetch('models/adamu/model.glb');
+                if (response.ok) {
+                    addResult('✅ File is accessible', 'success');
+                    log('✓ File fetch successful');
+                } else {
+                    addResult('❌ File not accessible', 'error');
+                    log('✗ File fetch failed');
+                    return;
+                }
+
+                // Test 2: Load Three.js
+                log('Loading Three.js...');
+                const THREE = await import('./libs/three.module.js');
+                addResult('✅ Three.js loaded', 'success');
+                log('✓ Three.js loaded');
+
+                // Test 3: Load GLTFLoader
+                log('Loading GLTFLoader...');
+                const { GLTFLoader } = await import('./libs/GLTFLoader.js');
+                addResult('✅ GLTFLoader loaded', 'success');
+                log('✓ GLTFLoader loaded');
+
+                // Test 4: Create scene and load model
+                log('Creating 3D scene...');
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ canvas });
+                renderer.setSize(400, 400);
+
+                // Add lights
+                scene.add(new THREE.HemisphereLight(0xffffff, 0x404040, 0.8));
+                const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+                dir.position.set(4, 6, 8);
+                scene.add(dir);
+
+                log('Loading GLB model...');
+                const loader = new GLTFLoader();
+                
+                loader.load(
+                    'models/adamu/model.glb',
+                    (gltf) => {
+                        addResult('✅ Model loaded successfully!', 'success');
+                        log('✓ GLB loaded successfully');
+                        
+                        if (gltf.scene) {
+                            scene.add(gltf.scene);
+                            camera.position.set(3, 1.8, 4);
+                            camera.lookAt(0, 0, 0);
+                            renderer.render(scene, camera);
+                            addResult('✅ Model rendered!', 'success');
+                            log('✓ Model rendered');
+                        } else {
+                            addResult('⚠️ Model loaded but no scene', 'error');
+                            log('⚠ No scene in loaded model');
+                        }
+                    },
+                    (progress) => {
+                        if (progress.total > 0) {
+                            const percent = Math.round(progress.loaded / progress.total * 100);
+                            log(`Loading: ${percent}%`);
+                        }
+                    },
+                    (error) => {
+                        addResult('❌ Model loading failed', 'error');
+                        log(`✗ Loading failed: ${error.message}`);
+                        console.error('GLTFLoader error:', error);
+                    }
+                );
+
+            } catch (error) {
+                addResult(`❌ Test failed: ${error.message}`, 'error');
+                log(`✗ Test error: ${error.message}`);
+                console.error('Test error:', error);
+            }
+        }
+
+        test();
+    </script>
+</body>
+</html>

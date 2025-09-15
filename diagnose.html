@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GLB Loading Diagnosis</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .diagnosis { background: #f0f0f0; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .instructions { background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .console { background: #000; color: #0f0; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px; height: 300px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>GLB Loading Diagnosis Tool</h1>
+    
+    <div class="instructions">
+        <h3>How to use this tool:</h3>
+        <ol>
+            <li>Open your browser's Developer Tools (F12)</li>
+            <li>Go to the Console tab</li>
+            <li>Click the "Run Diagnosis" button below</li>
+            <li>Check the console output for detailed diagnosis results</li>
+        </ol>
+    </div>
+    
+    <div class="diagnosis">
+        <h3>Diagnosis Results</h3>
+        <div id="results">Click "Run Diagnosis" to start...</div>
+        <button onclick="runDiagnosis()" style="margin-top: 10px; padding: 10px 20px; font-size: 16px;">Run Diagnosis</button>
+    </div>
+    
+    <div class="diagnosis">
+        <h3>Console Output</h3>
+        <div id="console-output" class="console">Diagnosis will appear here...</div>
+    </div>
+
+    <script type="module">
+        // Override console.log to capture output
+        const originalLog = console.log;
+        const originalError = console.error;
+        const consoleOutput = document.getElementById('console-output');
+        
+        function addToConsole(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#ff6b6b' : '#0f0';
+            consoleOutput.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToConsole(args.join(' '));
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToConsole(args.join(' '), 'error');
+        };
+        
+        // Import and expose the diagnosis function
+        window.runDiagnosis = async function() {
+            const results = document.getElementById('results');
+            results.innerHTML = 'Running diagnosis...';
+            
+            try {
+                // Import the diagnosis function
+                const { default: diagnose } = await import('./diagnose-glb.js');
+                const diagnosisResults = await diagnose();
+                
+                // Display results
+                let html = '<h4>Diagnosis Complete</h4>';
+                html += `<p><strong>File Accessibility:</strong> ${diagnosisResults.fileAccessibility ? '✅ Pass' : '❌ Fail'}</p>`;
+                html += `<p><strong>Three.js Loading:</strong> ${diagnosisResults.threeJsLoading ? '✅ Pass' : '❌ Fail'}</p>`;
+                html += `<p><strong>GLTFLoader Loading:</strong> ${diagnosisResults.gltfLoaderLoading ? '✅ Pass' : '❌ Fail'}</p>`;
+                html += `<p><strong>Model Loading:</strong> ${diagnosisResults.modelLoading ? '✅ Pass' : '❌ Fail'}</p>`;
+                
+                if (diagnosisResults.errors.length > 0) {
+                    html += '<h4>Errors Found:</h4><ul>';
+                    diagnosisResults.errors.forEach(error => {
+                        html += `<li style="color: red;">${error}</li>`;
+                    });
+                    html += '</ul>';
+                }
+                
+                results.innerHTML = html;
+                
+            } catch (error) {
+                results.innerHTML = `<p style="color: red;">Diagnosis failed: ${error.message}</p>`;
+            }
+        };
+    </script>
+</body>
+</html>

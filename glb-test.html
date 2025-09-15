@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GLB Loading Test - Echoes of Eridu</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .viewer-container {
+            width: 400px;
+            height: 400px;
+            border: 2px solid #333;
+            margin: 10px 0;
+        }
+        .log-container {
+            max-height: 300px;
+            overflow-y: auto;
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>GLB Loading Diagnostic Test</h1>
+        <p>This test will help diagnose why your .glb files aren't loading properly.</p>
+
+        <div class="test-section">
+            <div class="test-title">Test 1: File Accessibility</div>
+            <div id="file-test-result" class="test-result info">Testing file accessibility...</div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Test 2: Three.js Library Loading</div>
+            <div id="library-test-result" class="test-result info">Testing library loading...</div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Test 3: GLTFLoader Functionality</div>
+            <div id="gltf-test-result" class="test-result info">Testing GLTFLoader...</div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Test 4: Original Viewer</div>
+            <div id="viewer-test-result" class="test-result info">Testing original viewer...</div>
+            <div class="viewer-container" id="viewer-container">
+                <div class="viewer" data-folder="models/adamu/" data-model="models/adamu/model.glb">
+                    <canvas></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Console Logs</div>
+            <div id="console-logs" class="log-container"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        const fileTestResult = document.getElementById('file-test-result');
+        const libraryTestResult = document.getElementById('library-test-result');
+        const gltfTestResult = document.getElementById('gltf-test-result');
+        const viewerTestResult = document.getElementById('viewer-test-result');
+        const consoleLogs = document.getElementById('console-logs');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            consoleLogs.appendChild(logEntry);
+            consoleLogs.scrollTop = consoleLogs.scrollHeight;
+            console.log(message);
+        }
+
+        function setResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `test-result ${type}`;
+        }
+
+        async function runTests() {
+            log('Starting GLB loading diagnostic tests...');
+
+            // Test 1: File Accessibility
+            log('=== Test 1: File Accessibility ===');
+            try {
+                const response = await fetch('models/adamu/model.glb');
+                if (response.ok) {
+                    setResult('file-test-result', '✅ Model file is accessible', 'success');
+                    log(`✓ File accessible: ${response.status} ${response.statusText}`);
+                    log(`  Content-Type: ${response.headers.get('content-type')}`);
+                    log(`  Content-Length: ${response.headers.get('content-length')}`);
+                } else {
+                    setResult('file-test-result', `❌ File not accessible: ${response.status}`, 'error');
+                    log(`✗ File not accessible: ${response.status} ${response.statusText}`);
+                }
+            } catch (error) {
+                setResult('file-test-result', `❌ File fetch error: ${error.message}`, 'error');
+                log(`✗ File fetch error: ${error.message}`);
+            }
+
+            // Test 2: Library Loading
+            log('=== Test 2: Library Loading ===');
+            try {
+                log('Loading Three.js...');
+                const THREE = await import('./libs/three.module.js');
+                log(`✓ Three.js loaded successfully (version: ${THREE.REVISION})`);
+
+                log('Loading OrbitControls...');
+                const { OrbitControls } = await import('./libs/OrbitControls.js');
+                log('✓ OrbitControls loaded successfully');
+
+                log('Loading GLTFLoader...');
+                const { GLTFLoader } = await import('./libs/GLTFLoader.js');
+                log('✓ GLTFLoader loaded successfully');
+
+                setResult('library-test-result', '✅ All libraries loaded successfully', 'success');
+            } catch (error) {
+                setResult('library-test-result', `❌ Library loading failed: ${error.message}`, 'error');
+                log(`✗ Library loading error: ${error.message}`);
+            }
+
+            // Test 3: GLTFLoader Functionality
+            log('=== Test 3: GLTFLoader Functionality ===');
+            try {
+                const THREE = await import('./libs/three.module.js');
+                const { GLTFLoader } = await import('./libs/GLTFLoader.js');
+
+                const loader = new GLTFLoader();
+                log('GLTFLoader instance created successfully');
+
+                // Test loading the model
+                log('Attempting to load GLB model...');
+                const gltf = await new Promise((resolve, reject) => {
+                    loader.load(
+                        'models/adamu/model.glb',
+                        (gltf) => {
+                            log('✓ GLTFLoader success callback called');
+                            log(`  Scene: ${gltf.scene ? 'present' : 'missing'}`);
+                            log(`  Scenes: ${gltf.scenes ? gltf.scenes.length : 0}`);
+                            log(`  Animations: ${gltf.animations ? gltf.animations.length : 0}`);
+                            resolve(gltf);
+                        },
+                        (progress) => {
+                            if (progress.total > 0) {
+                                const percent = Math.round(progress.loaded / progress.total * 100);
+                                log(`  Loading progress: ${percent}%`);
+                            }
+                        },
+                        (error) => {
+                            log(`✗ GLTFLoader error: ${error.message}`);
+                            log(`  Error details: ${JSON.stringify(error)}`);
+                            reject(error);
+                        }
+                    );
+                });
+
+                if (gltf && gltf.scene) {
+                    setResult('gltf-test-result', '✅ GLTFLoader successfully loaded the model', 'success');
+                    log('✓ GLTFLoader test completed successfully');
+                } else {
+                    setResult('gltf-test-result', '⚠️ GLTFLoader loaded file but no scene found', 'warning');
+                    log('⚠ GLTFLoader loaded file but no scene found');
+                }
+            } catch (error) {
+                setResult('gltf-test-result', `❌ GLTFLoader test failed: ${error.message}`, 'error');
+                log(`✗ GLTFLoader test failed: ${error.message}`);
+            }
+
+            // Test 4: Original Viewer
+            log('=== Test 4: Original Viewer ===');
+            try {
+                setResult('viewer-test-result', 'Testing original viewer...', 'info');
+                log('Initializing original viewer...');
+                
+                const { initGLBViewer } = await import('./viewer.js');
+                const viewerContainer = document.querySelector('.viewer');
+                
+                if (viewerContainer) {
+                    log('Viewer container found, initializing...');
+                    await initGLBViewer(viewerContainer);
+                    log('✓ Original viewer initialized');
+                    setResult('viewer-test-result', '✅ Original viewer initialized (check for model loading above)', 'success');
+                } else {
+                    setResult('viewer-test-result', '❌ Viewer container not found', 'error');
+                    log('✗ Viewer container not found');
+                }
+            } catch (error) {
+                setResult('viewer-test-result', `❌ Original viewer failed: ${error.message}`, 'error');
+                log(`✗ Original viewer error: ${error.message}`);
+            }
+
+            log('=== All tests completed ===');
+        }
+
+        // Start tests when page loads
+        runTests();
+    </script>
+</body>
+</html>
