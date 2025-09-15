@@ -1,4 +1,4 @@
-// viewer.js  — no-CDN GLB viewer (Three r159)
+// viewer.js — GLB viewer (no CDN, Three r159) using import.meta.url-safe imports
 export async function initGLBViewer(container){
   const status = document.createElement('div');
   status.className = 'view-status';
@@ -8,37 +8,35 @@ export async function initGLBViewer(container){
 
   const canvas = container.querySelector('canvas') || container.appendChild(document.createElement('canvas'));
 
-  // Helper to give a clean error if a local lib is missing
-  async function need(url, name){
+  // Resolve a module path relative to THIS file
+  const rel = (p) => new URL(p, import.meta.url).href;
+
+  async function need(relativePath, name){
+    const url = rel(relativePath);
     try { return await import(url); }
     catch(e){ throw new Error(`Missing local lib: ${name} (<code>${url}</code>)`); }
   }
 
   try {
-    // ---- Local libs (no CDN) ----
-    const THREE              = await need('./libs/three.module.js',    'three.module.js');
-    const { OrbitControls }  = await need('./libs/OrbitControls.js',   'OrbitControls.js');
-    const { GLTFLoader }     = await need('./libs/GLTFLoader.js',      'GLTFLoader.js');
-    const { DRACOLoader }    = await need('./libs/DRACOLoader.js',     'DRACOLoader.js');
-    const { KTX2Loader }     = await need('./libs/KTX2Loader.js',      'KTX2Loader.js');
-    const { RoomEnvironment }= await need('./libs/RoomEnvironment.js', 'RoomEnvironment.js');
+    // ---- Local libs (absolute to viewer.js) ----
+    const THREE               = await need('./libs/three.module.js',    'three.module.js');
+    const { OrbitControls }   = await need('./libs/OrbitControls.js',   'OrbitControls.js');
+    const { GLTFLoader }      = await need('./libs/GLTFLoader.js',      'GLTFLoader.js');
+    const { DRACOLoader }     = await need('./libs/DRACOLoader.js',     'DRACOLoader.js');
+    const { KTX2Loader }      = await need('./libs/KTX2Loader.js',      'KTX2Loader.js');
+    const { RoomEnvironment } = await need('./libs/RoomEnvironment.js', 'RoomEnvironment.js');
 
-    // Meshopt optional — safe assign (no destructuring assignment)
+    // Optional meshopt (safe if missing)
     let MeshoptDecoder = null;
-    try {
-      const mod = await import('./libs/meshopt_decoder.module.js');
-      MeshoptDecoder = mod.MeshoptDecoder || null;
-    } catch(_) { /* ok if not present */ }
+    try { MeshoptDecoder = (await import(rel('./libs/meshopt_decoder.module.js'))).MeshoptDecoder || null; } catch {}
 
-    // ---- Three basics ----
+    // ---- Three setup ----
     const renderer = new THREE.WebGLRenderer({ antialias:true, canvas, alpha:true });
-    renderer.outputColorSpace   = THREE.SRGBColorSpace;
-    renderer.toneMapping        = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure= 1.05;
+    renderer.outputColorSpace    = THREE.SRGBColorSpace;
+    renderer.toneMapping         = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
 
-    const scene  = new THREE.Scene();
-    scene.background = null;
-
+    const scene = new THREE.Scene(); scene.background = null;
     const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 10000);
     camera.position.set(3, 1.8, 4);
 
@@ -46,21 +44,19 @@ export async function initGLBViewer(container){
     scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.08).texture;
 
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.06;
-    controls.target.set(0,1,0);
+    controls.enableDamping = true; controls.dampingFactor = 0.06; controls.target.set(0,1,0);
 
     scene.add(new THREE.HemisphereLight(0xffffff, 0x404040, 0.8));
-    const dir = new THREE.DirectionalLight(0xffffff, 0.9);
-    dir.position.set(4,6,8);
-    scene.add(dir);
+    const dir = new THREE.DirectionalLight(0xffffff, 0.9); dir.position.set(4,6,8); scene.add(dir);
 
     // ---- GLTF loader with DRACO/KTX2/Meshopt ----
     const loader = new GLTFLoader();
-    const draco  = new DRACOLoader().setDecoderPath('./libs/draco/');   // trailing slash!
+
+    const draco = new DRACOLoader();
+    draco.setDecoderPath(rel('./libs/draco/'));       // must end with slash
     loader.setDRACOLoader(draco);
 
-    const ktx2 = new KTX2Loader().setTranscoderPath('./libs/basis/');   // trailing slash!
+    const ktx2 = new KTX2Loader().setTranscoderPath(rel('./libs/basis/'));
     ktx2.detectSupport(renderer);
     loader.setKTX2Loader(ktx2);
 
@@ -68,7 +64,6 @@ export async function initGLBViewer(container){
 
     // ---- Utilities ----
     let current = null;
-
     function disposeObject(obj){
       obj.traverse(n=>{
         if(n.geometry) n.geometry.dispose();
@@ -98,8 +93,7 @@ export async function initGLBViewer(container){
       const fov = camera.fov * Math.PI/180;
       const dist = (maxDim/2) / Math.tan(fov/2) * 1.4;
       camera.position.set(center.x + dist*0.3, center.y + maxDim*0.35, center.z + dist);
-      controls.target.copy(center);
-      controls.update();
+      controls.target.copy(center); controls.update();
       const scale = maxDim>1000 ? 0.01 : (maxDim<0.1 ? 50.0 : 1.0);
       if (scale !== 1.0) obj.scale.multiplyScalar(scale);
     }
@@ -110,15 +104,12 @@ export async function initGLBViewer(container){
       const dpr = Math.min(window.devicePixelRatio||1, 2);
       renderer.setSize(w, h, false);
       renderer.setPixelRatio(dpr);
-      camera.aspect = w/h;
-      camera.updateProjectionMatrix();
+      camera.aspect = w/h; camera.updateProjectionMatrix();
     }
-    resize();
-    window.addEventListener('resize', resize);
-
+    resize(); window.addEventListener('resize', resize);
     (function loop(){ requestAnimationFrame(loop); controls.update(); renderer.render(scene,camera); })();
 
-    // ---- Loading logic ----
+    // ---- Load model ----
     async function tryFetch(url){ try{ const r = await fetch(url,{cache:'no-cache'}); if(!r.ok) throw 0; return r; }catch{ return null; } }
     const clean = (p)=> p.replace(/\/+/g,'/');
     const tryList = (folder,name)=>[
