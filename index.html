@@ -1,23 +1,137 @@
-<!doctype html>
-<html lang="en"><head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Echoes of Eridu — Home</title>
-<link rel="stylesheet" href="styles.css"/></head><body class="">
-<img class="bg" src="assets/bg.png" alt="BG"/><div class="vignette" aria-hidden="true"></div>
-<input type="checkbox" id="navcheck" aria-hidden="true" />
-<div class="mobile-bar"><label class="hamburger" for="navcheck" aria-label="Open navigation">≡</label><div class="mobile-title">ERIDU</div></div>
-<aside class="rail" role="navigation" aria-label="Site navigation">
-  <div class="brand"><div class="small">ECHOES OF</div><div class="big">ERIDU</div></div>
-  <h2>ASSETS</h2>
-  <nav class="nav">
-    <a href="index.html" class="active" aria-current="page">Home</a>
-    <a href="characters.html" >Characters</a>
-    <a href="weapons.html" >Weapons</a>
-    <a href="worlds.html" >Worlds</a>
-    <a href="vehicles.html" >Vehicles</a>
-  </nav>
-</aside>
-<label class="scrim" for="navcheck" aria-hidden="true"></label>
-<section class='earth-text'><p class='lead'>Echoes of Eridu is a myth-tech odyssey where Anunnaki law meets human defiance—obsidian nights lit by gold script, canals and ziggurats humming with power.</p><p class=''>You are an Adamu runner, broker, and witness. Trade favors, track rumors, and wield sacred Names that bend local rules—at a risk that draws watchful audits.</p><p class=''>Fight and race across land, sea, air, and space. Outmaneuver patrols, chart hidden routes, and outfit modular craft to survive storms, deserts, and star-road ambushes.</p><p class=''>Begin aligned with one of five playable factions—each with its own ethos and progression—and let reputation, civility, and choices carve your legend through festival and war.</p></section>
-<div class="footer">© Echoes of Eridu — Obsidian &amp; Gold</div>
-</body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Echoes of Eridu</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-image: url('background.jpg'); /* Replace with your background image path */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: white;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        nav li {
+            margin: 0;
+        }
+
+        nav a {
+            display: block;
+            padding: 15px 25px;
+            text-decoration: none;
+            color: white;
+            transition: background-color 0.3s;
+        }
+
+        nav a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .content-section {
+            display: none;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .model-container {
+            margin: 20px 0;
+        }
+
+        .model-container img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Echoes of Eridu</h1>
+        
+        <nav>
+            <ul>
+                <li><a href="#" onclick="showSection('characters')">Characters</a></li>
+                <li><a href="#" onclick="showSection('vehicles')">Vehicles</a></li>
+                <li><a href="#" onclick="showSection('weapons')">Weapons</a></li>
+                <li><a href="#" onclick="showSection('worlds')">Worlds</a></li>
+            </ul>
+        </nav>
+
+        <div id="characters" class="content-section active">
+            <h2>Character Races</h2>
+            <p>Explore the unique races of Echoes of Eridu.</p>
+            <!-- Placeholder for character models -->
+            <div class="model-container">
+                <img src="placeholder-character.png" alt="Character Model">
+            </div>
+        </div>
+
+        <div id="vehicles" class="content-section">
+            <h2>Vehicles</h2>
+            <p>Discover the vehicles used in different worlds.</p>
+            <!-- Placeholder for vehicle models -->
+            <div class="model-container">
+                <img src="placeholder-vehicle.png" alt="Vehicle Model">
+            </div>
+        </div>
+
+        <div id="weapons" class="content-section">
+            <h2>Weapons</h2>
+            <p>Learn about the weapons available in Echoes of Eridu.</p>
+            <!-- Placeholder for weapon models -->
+            <div class="model-container">
+                <img src="placeholder-weapon.png" alt="Weapon Model">
+            </div>
+        </div>
+
+        <div id="worlds" class="content-section">
+            <h2>Worlds</h2>
+            <p>Explore the different worlds in Echoes of Eridu.</p>
+            <!-- Placeholder for world models -->
+            <div class="model-container">
+                <img src="placeholder-world.png" alt="World Model">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSection(sectionId) {
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+        }
+    </script>
+</body>
+</html>
